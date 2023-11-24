@@ -1,6 +1,6 @@
 <template>
-    <default-field :field="field" :errors="errors">
-        <template slot="field">
+    <DefaultField :field="field" :errors="errors">
+        <template #field>
             <div class="flex" v-if="manualFill">
                 <div class="w-4/5 p-1">
                     <vue-google-autocomplete
@@ -18,7 +18,7 @@
                 <div class="w-1/5 p-1">
 
                     <button type="button" v-if="manualFill" v-on:click="fillFields" :disabled="!hasUnfilledChanges"
-                            class="btn btn-default btn-primary hover:bg-primary-dark w-full">{{manualFill}}
+                            class="shadow relative bg-primary-500 hover:bg-primary-400 text-white dark:text-gray-900 cursor-pointer rounded text-sm font-bold focus:outline-none focus:ring ring-primary-200 dark:ring-gray-600 inline-flex items-center justify-center h-9 px-3 shadow relative bg-primary-500 hover:bg-primary-400 text-white dark:text-gray-900 w-full">{{manualFill}}
                     </button>
                 </div>
             </div>
@@ -92,7 +92,7 @@
                 {{ firstError }}
             </p>
         </template>
-    </default-field>
+    </DefaultField>
 </template>
 
 <script>
@@ -149,22 +149,17 @@ export default {
             this.initMap()
         }
 
+        const self = this
         if (this.field.do_not_store){
-            this.$parent.$children.forEach(component => {
-                if (component.field && [this.field.latitude_field, this.field.longitude_field, this.field.address_field, this.field.administrative_area_level_1].includes(component.field.attribute)){
-                    const comp = component;
-                    const watcher = component.$watch('value', value => {
-                        this.relatedValues[comp.field.attribute] = value;
-                        if (this.addressIsInitializing){
-                            this.initializeAddress();
-                        }
-                    });
-                    if (component.field.attribute === this.field.address_field){
-                        this.relatedWatchers.push( watcher );
-                    }
-                }
-            })
+            Nova.$on(this.latitude_field+'-change', function (value) {
+                self.addressData.latitude = value;
+                self.refreshMap();
+            });
 
+            Nova.$on(this.longitude_field+'-change', function (value) {
+                self.addressData.longitude = value;
+                self.refreshMap();
+            });
         }
     },
 
@@ -301,10 +296,11 @@ export default {
 
             var _this = this;
             google.maps.event.addListener(this.map, 'click', function(event) {
-
                 if (_this.marker) {
                     _this.marker.setMap(null);
+                    _this.marker.setVisible(false);
                 }
+
                 _this.marker = new google.maps.Marker({
                     position: event.latLng,
                     map: _this.map
@@ -344,9 +340,7 @@ export default {
 
                         _this.addressData.countryCode = _this.getAddressComponent(results, 'country', true);
                         _this.addressData.country = _this.getAddressComponent(results[0].address_components, 'country');
-                        var region = _this.getAddressComponent(results, 'administrative_area_level_1');
-                        console.log('REGION FOUND', region);
-                        _this.addressData.administrative_area_level_1 = region;
+                        _this.addressData.administrative_area_level_1 = _this.getAddressComponent(results, 'administrative_area_level_1');
                         _this.addressData.locality = _this.getFirstOccurenceOfComponent(results, 'locality') || _this.addressData.administrative_area_level_1;
                         _this.addressData.postal_code = _this.getAddressComponent(results[0].address_components, 'postal_code');
                         _this.forgetRelatedWatchers()
@@ -399,16 +393,16 @@ export default {
 
         updateTimeZoneField() {
             this.$nextTick(() => {
-                Nova.$emit(this.field.timezone + '-value', this.addressData.timeZoneName);
+                Nova.$emit(this.formUniqueId+'-'+this.field.timezone + '-value', this.addressData.timeZoneName);
             });
         },
 
         updateFields(addressData){
             this.hasUnfilledChanges = false;
             this.$nextTick(() => {
-                Nova.$emit(this.field.countryCode + '-value', addressData.countryCode);
-                Nova.$emit(this.field.country + '-value', addressData.country);
-                Nova.$emit(this.field.locality + '-value', addressData.locality);
+                Nova.$emit(this.formUniqueId+'-'+this.field.countryCode + '-value', addressData.countryCode);
+                Nova.$emit(this.formUniqueId+'-'+this.field.country + '-value', addressData.country);
+                Nova.$emit(this.formUniqueId+'-'+this.field.locality + '-value', addressData.locality);
 
                 let region = this.field.administrative_area_level_1;
                 let states = this.region_states;
@@ -427,21 +421,22 @@ export default {
                     name[this.field.address_field_array_key] = addressData.formatted_address;
                 }
 
-                Nova.$emit(this.field.address_field + '-value', name);
-                Nova.$emit(this.field.postal_code + '-value', addressData.postal_code);
+                Nova.$emit(this.formUniqueId+'-'+this.field.address_field + '-value', name);
+                Nova.$emit(this.formUniqueId+'-'+this.field.postal_code + '-value', addressData.postal_code);
             });
         },
         updateGeoLocationFields(addressData) {
             this.$nextTick(() => {
-                Nova.$emit(this.field.latitude_field + '-value', addressData.latitude);
-                Nova.$emit(this.field.longitude_field + '-value', addressData.longitude);
+                Nova.$emit(this.formUniqueId+'-'+this.field.latitude_field + '-value', addressData.latitude);
+                Nova.$emit(this.formUniqueId+'-'+this.field.longitude_field + '-value', addressData.longitude);
             });
         }
     },
 
     computed: {
-        computed() {
-
+        formUniqueId() {
+            const formSelector = document.querySelector('form[data-form-unique-id]');
+            return formSelector.dataset.formUniqueId;
         }
     },
 
