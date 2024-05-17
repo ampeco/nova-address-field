@@ -284,16 +284,6 @@ export default {
             // initialize the map
             this.map = new google.maps.Map(element, options);
 
-            // get formatted address for the latitude and longitude
-            // if(!this.addressData.address) {
-            //     this.geocode(center)
-            // }
-            // adding initial marker
-            this.marker = new google.maps.Marker({
-                position: center,
-                map: this.map
-            });
-
             var _this = this;
             google.maps.event.addListener(this.map, 'click', function(event) {
                 if (_this.marker) {
