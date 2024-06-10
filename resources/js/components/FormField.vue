@@ -7,7 +7,7 @@
                         ref="address"
                         :id="field.attribute"
                         :dusk="field.attribute"
-                        class="w-full form-control form-input form-input-bordered"
+                        class="w-full form-control form-input form-control-bordered"
                         :class="errorClasses"
                         :placeholder="field.name"
                         :country="field.countries"
@@ -27,7 +27,7 @@
                 ref="address"
                 :id="field.attribute"
                 :dusk="field.attribute"
-                class="w-full p-1 form-control form-input form-input-bordered"
+                class="w-full p-1 form-control form-input form-control-bordered"
                 :class="errorClasses"
                 :placeholder="field.name"
                 :country="field.countries"
@@ -62,7 +62,7 @@
                     </div>
                     <div class="py-3 pr-2 w-4/5">
                         <input id="latitude" type="text"
-                               class="w-full form-control form-input form-input-bordered"
+                               class="w-full form-control form-input form-control-bordered"
                                :class="errorClasses"
                                placeholder="long"
                                v-model="addressData.latitude"
@@ -76,7 +76,7 @@
                     </div>
                     <div class="py-3 w-4/5">
                         <input id="longitude" type="text"
-                               class="w-full form-control form-input form-input-bordered"
+                               class="w-full form-control form-input form-control-bordered"
                                :class="errorClasses"
                                placeholder="long"
                                v-model="addressData.longitude"
