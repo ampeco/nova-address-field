@@ -284,6 +284,14 @@ export default {
             // initialize the map
             this.map = new google.maps.Map(element, options);
 
+            // adding initial marker
+            if (this.field.init_pin) {
+                this.marker = new google.maps.Marker({
+                    position: center,
+                    map: this.map
+                });
+            }
+
             var _this = this;
             google.maps.event.addListener(this.map, 'click', function(event) {
                 if (_this.marker) {
