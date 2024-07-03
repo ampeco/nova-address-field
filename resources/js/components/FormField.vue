@@ -315,6 +315,7 @@ export default {
             this.map.setCenter(LatLng);
             if (this.marker) {
                 this.marker.setMap(null)
+                this.marker.setVisible(false)
             }
 
             this.marker = new google.maps.Marker({
@@ -325,6 +326,7 @@ export default {
 
         resetMarker() {
             this.marker.setMap(null)
+            this.marker.setVisible(false)
         },
 
         geocode(latLng) {
