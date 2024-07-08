@@ -284,6 +284,14 @@ export default {
             // initialize the map
             this.map = new google.maps.Map(element, options);
 
+            // adding initial marker
+            if (this.field.init_pin) {
+                this.marker = new google.maps.Marker({
+                    position: center,
+                    map: this.map
+                });
+            }
+
             var _this = this;
             google.maps.event.addListener(this.map, 'click', function(event) {
                 if (_this.marker) {
@@ -307,6 +315,7 @@ export default {
             this.map.setCenter(LatLng);
             if (this.marker) {
                 this.marker.setMap(null)
+                this.marker.setVisible(false)
             }
 
             this.marker = new google.maps.Marker({
@@ -317,6 +326,7 @@ export default {
 
         resetMarker() {
             this.marker.setMap(null)
+            this.marker.setVisible(false)
         },
 
         geocode(latLng) {

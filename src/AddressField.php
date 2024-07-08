@@ -145,4 +145,11 @@ class AddressField extends Field
             'region_states' => $states,
         ]);
     }
+
+    public function initPin(bool $initPin): self
+    {
+        return $this->withMeta([
+            'init_pin' => $initPin,
+        ]);
+    }
 }
