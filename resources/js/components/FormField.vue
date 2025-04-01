@@ -18,7 +18,7 @@
                 <div class="w-1/5 p-1">
 
                     <button type="button" v-if="manualFill" v-on:click="fillFields" :disabled="!hasUnfilledChanges"
-                            class="shadow relative bg-primary-500 hover:bg-primary-400 text-white dark:text-gray-900 cursor-pointer rounded text-sm font-bold focus:outline-none focus:ring ring-primary-200 dark:ring-gray-600 inline-flex items-center justify-center h-9 px-3 shadow relative bg-primary-500 hover:bg-primary-400 text-white dark:text-gray-900 w-full">{{manualFill}}
+                        class="shadow relative bg-primary-500 hover:bg-primary-400 text-white dark:text-gray-900 cursor-pointer rounded text-sm font-bold focus:outline-none focus:ring ring-primary-200 dark:ring-gray-600 inline-flex items-center justify-center h-9 px-3 shadow relative bg-primary-500 hover:bg-primary-400 text-white dark:text-gray-900 w-full">{{manualFill}}
                     </button>
                 </div>
             </div>
@@ -117,7 +117,8 @@ export default {
             addressData: {
                 latitude: this.field.lat || '',
                 longitude: this.field.lng || '',
-                address: ''
+                address: '',
+                streetAddress: '',
             },
             map: null,
             marker: null,
@@ -133,6 +134,7 @@ export default {
             postal_code: this.field.postal_code || false,
             timezone: this.field.timezone || false,
             address_field: this.field.address_field || false,
+            street_address_field: this.field.street_address_field || false,
             latitude_field: this.field.latitude_field || false,
             longitude_field: this.field.longitude_field || false,
             relatedValues: {},
@@ -217,6 +219,10 @@ export default {
                 || addressData.locality || addressData.administrative_area_level_1;
             this.addressData.postal_code = addressData.postal_code;
 
+            const streetName = this.getAddressComponent(placeResultData.address_components, 'route');
+            const streetNumber = this.getAddressComponent(placeResultData.address_components, 'street_number');
+            this.addressData.streetAaddress = `${streetName} ${streetNumber}`;
+
             this.hasUnfilledChanges = true;
             this.refreshMap()
         },
@@ -226,7 +232,7 @@ export default {
         },
         relatedAreEmpty: function(){
             if (this.field.address_field && this.relatedValues[this.field.address_field] ) {
-                if (this.field.address_field_array_key){
+                if (this.field.address_field_array_key) {
                     if (this.relatedValues[this.field.address_field][this.field.address_field_array_key]){
                         return false;
                     }
@@ -234,12 +240,25 @@ export default {
                     return false;
                 }
             }
+
+            if (this.field.street_address_field && this.relatedValues[this.field.street_address_field] ) {
+                if (this.field.street_address_array_key) {
+                    if (this.relatedValues[this.field.street_address_field][this.field.street_address_array_key]){
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
             if (this.field.latitude_field && this.relatedValues[this.field.latitude_field]) {
                 return false;
             }
+
             if (this.field.longitude_field && this.relatedValues[this.field.longitude_field]) {
                 return false;
             }
+
             return true;
         },
         initializeAddress: function(){
@@ -336,13 +355,18 @@ export default {
                     if (results[0]) {
                         _this.addressData.latitude = latLng.lat()
                         _this.addressData.longitude = latLng.lng()
-                        _this.addressData.formatted_address = results[0].formatted_address
+                        _this.addressData.formatted_address = results[0].formatted_address;
+
+                        const streetName = _this.getAddressComponent(results[0].address_components, 'route');
+                        const streetNumber = _this.getAddressComponent(results[0].address_components, 'street_number');
+                        const streetAddress = `${streetName} ${streetNumber}`;
 
                         _this.addressData.countryCode = _this.getAddressComponent(results, 'country', true);
                         _this.addressData.country = _this.getAddressComponent(results[0].address_components, 'country');
                         _this.addressData.administrative_area_level_1 = _this.getAddressComponent(results, 'administrative_area_level_1');
                         _this.addressData.locality = _this.getFirstOccurenceOfComponent(results, 'locality') || _this.addressData.administrative_area_level_1;
                         _this.addressData.postal_code = _this.getAddressComponent(results[0].address_components, 'postal_code');
+                        _this.addressData.streetAddress = streetAddress;
                         _this.forgetRelatedWatchers()
                         _this.hasUnfilledChanges = true;
                         _this.$refs.address.update(results[0].formatted_address);
@@ -397,7 +421,7 @@ export default {
             });
         },
 
-        updateFields(addressData){
+        updateFields(addressData) {
             this.hasUnfilledChanges = false;
             this.$nextTick(() => {
                 Nova.$emit(this.formUniqueId+'-'+this.field.countryCode + '-value', addressData.countryCode);
@@ -415,13 +439,20 @@ export default {
                   }
                 }, 500)
 
-                var name = addressData.formatted_address;
-                if (this.field.address_field_array_key){
-                    name = {};
-                    name[this.field.address_field_array_key] = addressData.formatted_address;
+                var addressName = addressData.formatted_address;
+                if (this.field.address_field_array_key) {
+                    addressName = {};
+                    addressName[this.field.address_field_array_key] = addressData.formatted_address;
                 }
 
-                Nova.$emit(this.formUniqueId+'-'+this.field.address_field + '-value', name);
+                var streetAddress = addressData.streetAaddress;
+                if (this.field.street_address_array_key) {
+                    streetAddress = {};
+                    streetAddress[this.field.street_address_array_key] = addressData.streetAddress;
+                }
+
+                Nova.$emit(this.formUniqueId+'-'+this.field.address_field + '-value', addressName);
+                Nova.$emit(this.formUniqueId+'-'+this.field.street_address_field + '-value', streetAddress);
                 Nova.$emit(this.formUniqueId+'-'+this.field.postal_code + '-value', addressData.postal_code);
             });
         },
