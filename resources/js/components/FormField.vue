@@ -221,7 +221,11 @@ export default {
 
             const streetName = this.getAddressComponent(placeResultData.address_components, 'route');
             const streetNumber = this.getAddressComponent(placeResultData.address_components, 'street_number');
-            this.addressData.streetAaddress = `${streetName} ${streetNumber}`;
+            let streetAddress = '';
+            if (streetName) {
+                streetAddress = streetNumber ? `${streetName} ${streetNumber}` : streetName;
+            }
+            this.addressData.streetAaddress = streetAddress;
 
             this.hasUnfilledChanges = true;
             this.refreshMap()
@@ -359,7 +363,10 @@ export default {
 
                         const streetName = _this.getAddressComponent(results[0].address_components, 'route');
                         const streetNumber = _this.getAddressComponent(results[0].address_components, 'street_number');
-                        const streetAddress = `${streetName} ${streetNumber}`;
+                        let streetAddress = '';
+                        if (streetName) {
+                            streetAddress = streetNumber ? `${streetName} ${streetNumber}` : streetName;
+                        }
 
                         _this.addressData.countryCode = _this.getAddressComponent(results, 'country', true);
                         _this.addressData.country = _this.getAddressComponent(results[0].address_components, 'country');
