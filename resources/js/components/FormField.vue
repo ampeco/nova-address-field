@@ -10,7 +10,7 @@
                         class="w-full form-control form-input form-control-bordered"
                         :class="errorClasses"
                         :placeholder="field.name"
-                        :country="field.countries"
+                        :country="currentField.countries"
                         :types="types"
                         v-on:placechanged="getAddressData">
                     </vue-google-autocomplete>
@@ -30,7 +30,7 @@
                 class="w-full p-1 form-control form-input form-control-bordered"
                 :class="errorClasses"
                 :placeholder="field.name"
-                :country="field.countries"
+                :country="currentField.countries"
                 :types="types"
                 v-on:placechanged="getAddressData">
             </vue-google-autocomplete>
@@ -96,14 +96,14 @@
 </template>
 
 <script>
-import {FormField, HandlesValidationErrors} from 'laravel-nova'
+import {DependentFormField, HandlesValidationErrors} from 'laravel-nova'
 import VueGoogleAutocomplete from 'vue-google-autocomplete'
 
 export default {
 
     components: { VueGoogleAutocomplete },
 
-    mixins: [FormField, HandlesValidationErrors],
+    mixins: [DependentFormField, HandlesValidationErrors],
 
     props: ['resourceName', 'resourceId', 'field'],
     data: function () {
