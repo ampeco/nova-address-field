@@ -3,9 +3,12 @@
 namespace DigitalCloud\AddressField;
 
 use Laravel\Nova\Fields\Field;
+use Laravel\Nova\Fields\SupportsDependentFields;
 
 class AddressField extends Field
 {
+    use SupportsDependentFields;
+
     /**
      * The field's component.
      *
