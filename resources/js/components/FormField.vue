@@ -219,6 +219,7 @@ export default {
             this.addressData.administrative_area_level_1 = !states.includes(countryCodeShort) ?
                 addressData.administrative_area_level_1 :
                 this.getAddressComponent(placeResultData.address_components, 'administrative_area_level_1');
+            this.addressData.administrative_area_level_1_short = this.getAddressComponent(placeResultData.address_components, 'administrative_area_level_1', true);
 
             this.addressData.locality = !states.includes(countryCodeShort) ?
                 this.getAddressComponent(placeResultData.address_components, 'administrative_area_level_1') :
@@ -378,6 +379,7 @@ export default {
                         _this.addressData.countryCode = _this.getAddressComponent(results, 'country', true);
                         _this.addressData.country = _this.getAddressComponent(results[0].address_components, 'country');
                         _this.addressData.administrative_area_level_1 = _this.getAddressComponent(results, 'administrative_area_level_1');
+                        _this.addressData.administrative_area_level_1_short = _this.getAddressComponent(results, 'administrative_area_level_1', true);
                         _this.addressData.locality = _this.getFirstOccurenceOfComponent(results, 'locality') || _this.addressData.administrative_area_level_1;
                         _this.addressData.postal_code = _this.getAddressComponent(results[0].address_components, 'postal_code');
                         _this.addressData.streetAddress = streetAddress;
@@ -439,17 +441,24 @@ export default {
             this.hasUnfilledChanges = false;
             this.$nextTick(() => {
                 Nova.$emit(this.formUniqueId+'-'+this.field.countryCode + '-value', addressData.countryCode);
+                Nova.$emit(this.formUniqueId+'-'+this.field.countryCode + '-change', addressData.countryCode);
                 Nova.$emit(this.formUniqueId+'-'+this.field.country + '-value', addressData.country);
+                Nova.$emit(this.formUniqueId+'-'+this.field.country + '-change', addressData.country);
                 Nova.$emit(this.formUniqueId+'-'+this.field.locality + '-value', addressData.locality);
+                Nova.$emit(this.formUniqueId+'-'+this.field.locality + '-change', addressData.locality);
 
                 let region = this.field.administrative_area_level_1;
                 let states = this.region_states;
+                let formUniqueId = this.formUniqueId;
 
                 setTimeout(function() {
                   if (states.includes(addressData.countryCode)) {
-                    Nova.$emit('state-value', addressData.administrative_area_level_1)
+                    let stateValue = addressData.administrative_area_level_1_short || addressData.administrative_area_level_1;
+                    Nova.$emit(formUniqueId + '-' + region + '_state-value', stateValue);
+                    Nova.$emit(formUniqueId + '-' + region + '_state-change', stateValue);
                   } else {
-                    Nova.$emit(region + '-value', addressData.administrative_area_level_1);
+                    Nova.$emit(formUniqueId + '-' + region + '-value', addressData.administrative_area_level_1);
+                    Nova.$emit(formUniqueId + '-' + region + '-change', addressData.administrative_area_level_1);
                   }
                 }, 500)
 
@@ -466,8 +475,11 @@ export default {
                 }
 
                 Nova.$emit(this.formUniqueId+'-'+this.field.address_field + '-value', addressName);
+                Nova.$emit(this.formUniqueId+'-'+this.field.address_field + '-change', addressName);
                 Nova.$emit(this.formUniqueId+'-'+this.field.street_address_field + '-value', streetAddress);
+                Nova.$emit(this.formUniqueId+'-'+this.field.street_address_field + '-change', streetAddress);
                 Nova.$emit(this.formUniqueId+'-'+this.field.postal_code + '-value', addressData.postal_code);
+                Nova.$emit(this.formUniqueId+'-'+this.field.postal_code + '-change', addressData.postal_code);
             });
         },
         updateGeoLocationFields(addressData) {

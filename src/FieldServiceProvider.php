@@ -22,7 +22,7 @@ class FieldServiceProvider extends ServiceProvider
         Nova::serving(function (ServingNova $event) {
             $key = config('services.googleMaps.key');
             Nova::script('google-maps', "https://maps.googleapis.com/maps/api/js?key={$key}&libraries=places");
-            Nova::script('address-field-2024-07-03', __DIR__ . '/../dist/js/field.js');
+            Nova::script('address-field-2026-07-29', __DIR__ . '/../dist/js/field.js');
             Nova::style('address-field-2024-03-14', __DIR__ . '/../dist/css/field.css');
         });
     }
