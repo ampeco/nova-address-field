@@ -205,6 +205,23 @@ export default {
 
             return null;
         },
+        getLocality: function (address_components) {
+            return this.getAddressComponent(address_components, 'locality')
+                || this.getAddressComponent(address_components, 'postal_town')
+                || this.getAddressComponent(address_components, 'sublocality_level_1')
+                || this.getAddressComponent(address_components, 'administrative_area_level_2')
+                || '';
+        },
+        getStreetAddress: function (address_components) {
+            const streetName = this.getAddressComponent(address_components, 'route');
+            const streetNumber = this.getAddressComponent(address_components, 'street_number');
+
+            if (!streetName) {
+                return '';
+            }
+
+            return streetNumber ? `${streetName} ${streetNumber}` : streetName;
+        },
         getAddressData: function (addressData, placeResultData, id) {
             let states = this.region_states;
             let countryCodeShort = this.getAddressComponent(placeResultData.address_components, 'country', true);
@@ -221,19 +238,9 @@ export default {
                 this.getAddressComponent(placeResultData.address_components, 'administrative_area_level_1');
             this.addressData.administrative_area_level_1_short = this.getAddressComponent(placeResultData.address_components, 'administrative_area_level_1', true);
 
-            this.addressData.locality = !states.includes(countryCodeShort) ?
-                this.getAddressComponent(placeResultData.address_components, 'administrative_area_level_1') :
-                this.getAddressComponent(placeResultData.address_components, 'postal_town', true)
-                || addressData.locality || addressData.administrative_area_level_1;
+            this.addressData.locality = this.getLocality(placeResultData.address_components);
             this.addressData.postal_code = addressData.postal_code;
-
-            const streetName = this.getAddressComponent(placeResultData.address_components, 'route');
-            const streetNumber = this.getAddressComponent(placeResultData.address_components, 'street_number');
-            let streetAddress = '';
-            if (streetName) {
-                streetAddress = streetNumber ? `${streetName} ${streetNumber}` : streetName;
-            }
-            this.addressData.streetAaddress = streetAddress;
+            this.addressData.streetAddress = this.getStreetAddress(placeResultData.address_components);
 
             this.hasUnfilledChanges = true;
             this.refreshMap()
@@ -369,20 +376,13 @@ export default {
                         _this.addressData.longitude = latLng.lng()
                         _this.addressData.formatted_address = results[0].formatted_address;
 
-                        const streetName = _this.getAddressComponent(results[0].address_components, 'route');
-                        const streetNumber = _this.getAddressComponent(results[0].address_components, 'street_number');
-                        let streetAddress = '';
-                        if (streetName) {
-                            streetAddress = streetNumber ? `${streetName} ${streetNumber}` : streetName;
-                        }
-
                         _this.addressData.countryCode = _this.getAddressComponent(results, 'country', true);
                         _this.addressData.country = _this.getAddressComponent(results[0].address_components, 'country');
                         _this.addressData.administrative_area_level_1 = _this.getAddressComponent(results, 'administrative_area_level_1');
                         _this.addressData.administrative_area_level_1_short = _this.getAddressComponent(results, 'administrative_area_level_1', true);
-                        _this.addressData.locality = _this.getFirstOccurenceOfComponent(results, 'locality') || _this.addressData.administrative_area_level_1;
+                        _this.addressData.locality = _this.getLocality(results[0].address_components) || _this.getFirstOccurenceOfComponent(results, 'locality') || '';
                         _this.addressData.postal_code = _this.getAddressComponent(results[0].address_components, 'postal_code');
-                        _this.addressData.streetAddress = streetAddress;
+                        _this.addressData.streetAddress = _this.getStreetAddress(results[0].address_components);
                         _this.forgetRelatedWatchers()
                         _this.hasUnfilledChanges = true;
                         _this.$refs.address.update(results[0].formatted_address);
@@ -468,7 +468,7 @@ export default {
                     addressName[this.field.address_field_array_key] = addressData.formatted_address;
                 }
 
-                var streetAddress = addressData.streetAaddress;
+                var streetAddress = addressData.streetAddress;
                 if (this.field.street_address_array_key) {
                     streetAddress = {};
                     streetAddress[this.field.street_address_array_key] = addressData.streetAddress;
