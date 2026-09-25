@@ -142,7 +142,7 @@ export default {
             addressIsInitializing: this.field.do_not_store ? true : false,
             manualFill: this.field.manual_fill || false,
             hasUnfilledChanges: false,
-            types: ['geocode', 'establishment']
+            types: null
         }
     },
 
