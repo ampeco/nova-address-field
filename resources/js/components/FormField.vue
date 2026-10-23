@@ -217,10 +217,23 @@ export default {
             const streetNumber = this.getAddressComponent(address_components, 'street_number');
 
             if (!streetName) {
-                return '';
+                return this.getStreetlessAddress(address_components, streetNumber);
             }
 
             return streetNumber ? `${streetName} ${streetNumber}` : streetName;
+        },
+        getStreetlessAddress: function (address_components, streetNumber) {
+            const premise = this.getAddressComponent(address_components, 'premise');
+            const houseNumber = streetNumber || (/^\d/.test(premise || '') ? premise : null);
+            const placeName = this.getAddressComponent(address_components, 'neighborhood')
+                || this.getAddressComponent(address_components, 'sublocality')
+                || this.getAddressComponent(address_components, 'locality');
+
+            if (!houseNumber || !placeName) {
+                return '';
+            }
+
+            return `${placeName} ${houseNumber}`;
         },
         getAddressData: function (addressData, placeResultData, id) {
             let states = this.region_states;
